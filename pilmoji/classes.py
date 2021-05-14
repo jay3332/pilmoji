@@ -15,7 +15,7 @@ class BasePilmoji:
     """
     @staticmethod
     def getsize(text: str, font=None, *, spacing=4,
-                emoji_size_factor: int = 1,
+                emoji_size_factor: float = 1,
                 emoji_position_offset=(0, 0)) -> typing.Tuple[int, int]:
         """
         Gets the size of the given text.
@@ -38,7 +38,7 @@ class BasePilmoji:
                 content = node['content']
                 width, _ = font.getsize(content)
                 if node['type'] != 'text':
-                    width = int(emoji_size_factor * font.size) + emoji_position_offset[0]
+                    width = int(emoji_size_factor * font.size)
 
                 this_x += width
             y += spacing + font.size
