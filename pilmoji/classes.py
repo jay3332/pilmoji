@@ -14,12 +14,16 @@ class BasePilmoji:
     The base emoji render that all renderes must inherit from.
     """
     @staticmethod
-    def getsize(text: str, font=None, *, spacing=4) -> typing.Tuple[int, int]:
+    def getsize(text: str, font=None, *, spacing=4,
+                emoji_size_factor: int = 1,
+                emoji_position_offset=(0, 0)) -> typing.Tuple[int, int]:
         """
         Gets the size of the given text.
         :param text: The text to use.
         :param font: The font to use.
         :param spacing: The line spacing, in pixels.
+        :param emoji_size_factor: The emoji resize factor.
+        :param emoji_position_offset: The emoji's position offset.
         :return: A tuple with values width, height.
         """
         if not font:
@@ -34,7 +38,7 @@ class BasePilmoji:
                 content = node['content']
                 width, _ = font.getsize(content)
                 if node['type'] != 'text':
-                    width = font.size
+                    width = int(emoji_size_factor * font.size) + emoji_position_offset[0]
 
                 this_x += width
             y += spacing + font.size

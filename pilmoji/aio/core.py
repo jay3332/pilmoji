@@ -53,6 +53,8 @@ class AsyncPilmoji(BasePilmoji):
                    stroke_width=0,
                    stroke_fill=None,
                    embedded_color=False,
+                   emoji_size_factor=1,
+                   emoji_position_offset=(0, 0),
                    *args, **kwargs) -> None:
         """
         Draws text with emoji rendering.
@@ -85,8 +87,9 @@ class AsyncPilmoji(BasePilmoji):
                         stream = await self.http.get_discord_emoji(content)
 
                     with Image.open(stream).convert("RGBA") as asset:
-                        asset = asset.resize((width := font.size, font.size), Image.ANTIALIAS)
-                        self.image.paste(asset, (x, y), asset)
+                        asset = asset.resize((width := int(emoji_size_factor * font.size), width), Image.ANTIALIAS)
+                        box = x + emoji_position_offset[0], y + emoji_position_offset[1]
+                        self.image.paste(asset, box, asset)
 
                 x += width
             y += spacing + font.size

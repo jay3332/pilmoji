@@ -10,6 +10,7 @@ Everything is cached, to ensure fast results.
 - Asynchronous support
 - Multi-line support
 - Discord emoji support
+- Emoji position and size adjusting
 - Caching
 
 ## Asynchronous Support
@@ -70,6 +71,9 @@ async def main():
 asyncio.run(main())
 ```
 Results are the exact same.
+### Size/position adjustments
+Is an emoji too low, or too small for a given font?
+You can also render emojis with offsets.
 ## Notes
 - [async] If you're running PIL in an executor, use the **sync** version of Pilmoji instead.
 - [async] It is not recommended to run PIL in asynchronous conditions (PIL is blocking.)
