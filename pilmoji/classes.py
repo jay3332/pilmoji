@@ -55,3 +55,4 @@ class BaseRequester:
     """
     BASE_URL = 'https://twemoji.maxcdn.com/v/latest/72x72/'
     BASE_DISCORD_URL = 'https://cdn.discordapp.com/emojis/'
+    BASE_MICROSOFT_URL = 'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/microsoft/209/'

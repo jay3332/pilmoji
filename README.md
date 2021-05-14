@@ -6,11 +6,14 @@ Pilmoji uses [twemoji](https://github.com/twitter/twemoji) for unicode emojis.
 For Discord emojis, Pilmoji will send a request to Discord's CDN.  
 Everything is cached, to ensure fast results.  
 
+You can also use Microsoft's emojis instead of Twemoji, if that's what you prefer.
+
 ## Features
 - Asynchronous support
 - Multi-line support
 - Discord emoji support
 - Emoji position and size adjusting
+- Twemoji __and__ Microsoft emoji support
 - Caching
 
 ## Asynchronous Support
@@ -72,8 +75,20 @@ asyncio.run(main())
 ```
 Results are the exact same.
 ### Size/position adjustments
-Is an emoji too low, or too small for a given font?
-You can also render emojis with offsets.
+Is an emoji too low, or too small for a given font?  
+You can also render emojis with offsets:
+```py 
+pilmoji.text((10, 10), my_string.strip(), (0, 0, 0), font,
+             emoji_size_factor=1.15, emoji_position_offset=(0, -2))
+```
+### Using Microsoft emojis
+Pilmoji also supports Microsoft emojis.  
+Simply set the `use_microsoft_emoji` kwarg to True, as such:
+```py 
+with Pilmoji(image, use_microsoft_emoji=True) as pilmoji:
+    ...
+```
+![results](https://jay.has-no-bra.in/f/suPfj0.png)
 ## Notes
 - [async] If you're running PIL in an executor, use the **sync** version of Pilmoji instead.
 - [async] It is not recommended to run PIL in asynchronous conditions (PIL is blocking.)

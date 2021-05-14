@@ -1,6 +1,7 @@
 import aiohttp
 import asyncio
 import typing
+import unicodedata
 from io import BytesIO
 from ..classes import BaseRequester
 
@@ -15,10 +16,11 @@ class AsyncRequester(BaseRequester):
     Makes requests to fetch images using aiohttp.
     Use `Requester` for non-asynchronous requests.
     """
-    def __init__(self, *, session: typing.Optional[aiohttp.ClientSession] = None, loop: typing.Optional[asyncio.AbstractEventLoop] = None):
+    def __init__(self, *, session: typing.Optional[aiohttp.ClientSession] = None, loop: typing.Optional[asyncio.AbstractEventLoop] = None, _microsoft=False):
         self.session: aiohttp.ClientSession = session or aiohttp.ClientSession(loop=loop)
         self.cache: typing.Dict[str, bytes] = {}
         self.loop: asyncio.AbstractEventLoop = loop
+        self._microsoft = _microsoft
 
     async def _request(self, url) -> typing.Optional[BytesIO]:
         if url in self.cache:
@@ -36,7 +38,13 @@ class AsyncRequester(BaseRequester):
         :param unicode: The unicode emoji.
         :return: The bytes stream of that emoji.
         """
-        url = self.BASE_URL + format(ord(unicode[0]), 'x') + '.png'
+        hex_code = format(ord(unicode[0]), 'x')
+        if not self._microsoft:
+            url = self.BASE_URL + hex_code + '.png'
+        else:
+            name = unicodedata.name(unicode, hex_code)
+            name = name.lower().replace(' ', '-')
+            url = self.BASE_MICROSOFT_URL + name + f'_{hex_code}.png'
         return await self._request(url)
 
     async def get_discord_emoji(self, emoji_id: typing.Union[int, str]) -> typing.Optional[BytesIO]:

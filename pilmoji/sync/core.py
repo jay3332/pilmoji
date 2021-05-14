@@ -16,11 +16,11 @@ class Pilmoji(BasePilmoji):
     """
     The synchronous emoji renderer.
     """
-    def __init__(self, image: Image.Image, *, session: typing.Optional[Session] = None):
+    def __init__(self, image: Image.Image, *, session: typing.Optional[Session] = None, use_microsoft_emoji: bool = False):
         if not isinstance(image, Image.Image):
             raise TypeError(f'Image must be of type Image, got {type(image).__name__!r} instead.')
 
-        self.http: Requester = Requester(session=session)
+        self.http: Requester = Requester(session=session, _microsoft=use_microsoft_emoji)
         self.image: Image.Image = image
         self.draw = ImageDraw.Draw(image)
 
@@ -85,10 +85,13 @@ class Pilmoji(BasePilmoji):
                     else:
                         stream = self.http.get_discord_emoji(content)
 
-                    with Image.open(stream).convert("RGBA") as asset:
-                        asset = asset.resize((width := int(emoji_size_factor * font.size), width), Image.ANTIALIAS)
-                        box = x + emoji_position_offset[0], y + emoji_position_offset[1]
-                        self.image.paste(asset, box, asset)
+                    if not stream:
+                        self.draw.text((x, y), content, *args, **kwargs)
+                    else:
+                        with Image.open(stream).convert("RGBA") as asset:
+                            asset = asset.resize((width := int(emoji_size_factor * font.size), width), Image.ANTIALIAS)
+                            box = x + emoji_position_offset[0], y + emoji_position_offset[1]
+                            self.image.paste(asset, box, asset)
 
                 x += width
             y += spacing + font.size

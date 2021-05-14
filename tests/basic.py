@@ -7,7 +7,7 @@ my_string = 'Hello, world! 👋 Here are some emojis: 🎨 🌊 😎\nI also sup
 with Image.new('RGB', (550, 80), (255, 255, 255)) as image:
     font = ImageFont.truetype('arial.ttf', 24)
 
-    with Pilmoji(image) as pilmoji:
+    with Pilmoji(image, use_microsoft_emoji=True) as pilmoji:
         print(pilmoji.getsize(my_string, font))
         pilmoji.text((10, 10), my_string, (0, 0, 0), font)
 
