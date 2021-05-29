@@ -17,10 +17,19 @@ class AsyncPilmoji(BasePilmoji):
     """
     The synchronous emoji renderer.
     """
-    def __init__(self, image: Image.Image, *, session: typing.Optional[ClientSession] = None, loop: typing.Optional[asyncio.AbstractEventLoop] = None, use_microsoft_emoji: bool = False):
+    def __init__(
+            self,
+            image: Image.Image,
+            *,
+            session: typing.Optional[ClientSession] = None,
+            loop: typing.Optional[asyncio.AbstractEventLoop] = None,
+            use_microsoft_emoji: bool = False,
+            render_discord_emoji: bool = True
+    ):
         if not isinstance(image, Image.Image):
             raise TypeError(f'Image must be of type Image, got {type(image).__name__!r} instead.')
 
+        self.render_discord_emoji: bool = render_discord_emoji
         self.http: AsyncRequester = AsyncRequester(session=session, loop=loop, _microsoft=use_microsoft_emoji)
         self.image: Image.Image = image
         self.draw = ImageDraw.Draw(image)
@@ -84,7 +93,10 @@ class AsyncPilmoji(BasePilmoji):
                     if node['type'] == 'twemoji':
                         stream = await self.http.get_twemoji(content)
                     else:
-                        stream = await self.http.get_discord_emoji(content)
+                        stream = (
+                            await self.http.get_discord_emoji(content)
+                            if self.render_discord_emoji else None
+                        )
 
                     if not stream:
                         self.draw.text((x, y), content, *args, **kwargs)
