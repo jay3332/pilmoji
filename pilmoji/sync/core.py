@@ -103,8 +103,9 @@ class Pilmoji(BasePilmoji):
                     else:
                         with Image.open(stream).convert("RGBA") as asset:
                             width = emoji_size_factor * font.size
-                            factor = asset.height // width
-                            asset = asset.resize((asset.width // factor, width), Image.ANTIALIAS)
+                            size = math.ceil(width / asset.height * asset.width), width
+                            asset = asset.resize(size, Image.ANTIALIAS)
+                            
                             box = x + emoji_position_offset[0], y + emoji_position_offset[1]
                             self.image.paste(asset, box, asset)
 
