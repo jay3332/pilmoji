@@ -1,15 +1,17 @@
 import typing
 from gc import collect
+
+from PIL import ImageFont, Image, ImageDraw
 from requests import Session
+
 from .http import Requester
 from ..classes import BasePilmoji
 from ..helpers import get_nodes
-from PIL import ImageFont, Image, ImageDraw
 
 
-__all__ = [
-    'Pilmoji'
-]
+__all__ = (
+    'Pilmoji',
+)
 
 
 class Pilmoji(BasePilmoji):
@@ -23,7 +25,7 @@ class Pilmoji(BasePilmoji):
             session: typing.Optional[Session] = None,
             use_microsoft_emoji: bool = False,
             render_discord_emoji: bool = True
-    ):
+    ) -> None:
         if not isinstance(image, Image.Image):
             raise TypeError(f'Image must be of type Image, got {type(image).__name__!r} instead.')
 
@@ -38,7 +40,7 @@ class Pilmoji(BasePilmoji):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def close(self):
+    def close(self) -> None:
         """
         Closes the requester and collects garbage.
         """
@@ -77,7 +79,7 @@ class Pilmoji(BasePilmoji):
 
         x, y = xy
         original_x = x
-        lines = text.split('\n')
+        lines = text.splitlines()
         nodes = get_nodes(lines)
 
         for line in nodes:
@@ -100,7 +102,10 @@ class Pilmoji(BasePilmoji):
                         self.draw.text((x, y), content, *args, **kwargs)
                     else:
                         with Image.open(stream).convert("RGBA") as asset:
-                            asset = asset.resize((width := int(emoji_size_factor * font.size), width), Image.ANTIALIAS)
+                            width = emoji_size_factor * font.size
+                            size = math.ceil(width / asset.height * asset.width), width
+                            asset = asset.resize(size, Image.ANTIALIAS)
+                            
                             box = x + emoji_position_offset[0], y + emoji_position_offset[1]
                             self.image.paste(asset, box, asset)
 
