@@ -36,7 +36,7 @@ class Requester(BaseRequester):
         :param unicode: The unicode emoji.
         :return: The bytes stream of that emoji.
         """
-        hex_code = '-'.join([format(ord(ch), 'x') for ch in unicode])
+        hex_code = '-'.join(format(ord(ch), 'x') for ch in unicode)
         if not self._microsoft:
             url = self.BASE_URL + hex_code + '.png'
         else:
