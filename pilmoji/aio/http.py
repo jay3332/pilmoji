@@ -4,7 +4,7 @@ import typing
 import unicodedata
 from io import BytesIO
 from ..classes import BaseRequester
-
+import emoji
 
 __all__ = [
     'AsyncRequester'
@@ -38,12 +38,12 @@ class AsyncRequester(BaseRequester):
         :param unicode: The unicode emoji.
         :return: The bytes stream of that emoji.
         """
-        hex_code = format(ord(unicode[0]), 'x')
+        hex_code = '-'.join([format(ord(ch), 'x') for ch in unicode])
         if not self._microsoft:
             url = self.BASE_URL + hex_code + '.png'
         else:
-            name = unicodedata.name(unicode, hex_code)
-            name = name.lower().replace(' ', '-')
+            name = emoji.demojize(unicode)[1:-1]
+            name = name.lower().replace('_', '-')
             url = self.BASE_MICROSOFT_URL + name + f'_{hex_code}.png'
         return await self._request(url)
 
