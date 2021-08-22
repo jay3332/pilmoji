@@ -1,9 +1,6 @@
-# sync
-from .sync import Pilmoji, Requester
+from . import helpers, source
+from .core import Pilmoji
+from .helpers import *
 
-# async
-from .aio import AsyncPilmoji, AsyncRequester
-
-
-__version__ = '1.3.2'
+__version__ = '2.0.0'
 __author__ = 'jay3332'

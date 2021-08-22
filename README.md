@@ -1,34 +1,36 @@
 # Pilmoji
-Pilmoji is an emoji renderer for Pillow, Python's imaging library.  
-It supports not only unicode emojis, but also Discord emojis.
+Pilmoji is an emoji renderer for [Pillow](https://github.com/python-pillow/Pillow/), 
+Python's imaging library.
 
-Pilmoji uses [twemoji](https://github.com/twitter/twemoji) for unicode emojis.  
-For Discord emojis, Pilmoji will send a request to Discord's CDN.  
-Everything is cached, to ensure fast results.  
-
-You can also use Microsoft's emojis instead of Twemoji, if that's what you prefer.
+Pilmoji comes equipped with support for both unicode emojis and Discord emojis.
 
 ## Features
-- Asynchronous support
-- Multi-line support
 - Discord emoji support
-- Emoji position and size adjusting
-- Twemoji __and__ Microsoft emoji support
-- Caching
+- Multi-line rendering support
+- Emoji position and/or size adjusting
+- Many built-in emoji sources
+- Optional caching
 
-## Asynchronous Support
-Pilmoji has both synchronous ([requests](https://pypi.org/project/requests/))
-and asynchrounous ([aiohttp](https://pypi.org/project/aiohttp/)) support.  
+## Installation and Requirements
+You must have Python 3.8 or higher in order to install Pilmoji.
 
-## Installation
-Pilmoji should be installed using `pip`:
-``` 
-pip install pilmoji
+Installation can be done with `pip`:
+```shell 
+$ pip install -U pilmoji
 ```
-Installing from Github will most likely fail.
 
-## Examples
-### Basic usage
+Optionally, you can add the `[requests]` option to install requests
+alongside Pilmoji:
+```shell 
+$ pip install -U pilmoji[requests]
+```
+
+The option is not required, instead if `requests` is not installed, 
+Pilmoji will fallback to use the builtin `urllib`.
+
+You may also install from Github.
+
+## Usage
 ```py 
 from pilmoji import Pilmoji
 from PIL import Image, ImageFont
@@ -47,49 +49,37 @@ with Image.new('RGB', (550, 80), (255, 255, 255)) as image:
 
     image.show()
 ```
+
 #### Result
 ![Example result](https://jay.has-no-bra.in/f/j4iEcc.png)
-### Async usage
-```py
-import asyncio
-from pilmoji import AsyncPilmoji
-from PIL import Image, ImageFont
 
-my_string = '''
-Hello, world! 👋 Here are some emojis: 🎨 🌊 😎
-I also support Discord emoji: <:rooThink:596576798351949847>
-'''
+## Switching emoji sources
+As seen from the example, Pilmoji defaults to the `Twemoji` emoji source. 
 
+If you prefer emojis from a different source, for example Microsoft, simply
+set the `source` kwarg in the constructor to a source found in the 
+`pilmoji.source` module:
 
-async def main():
-    with Image.new('RGB', (550, 80), (255, 255, 255)) as image:
-        font = ImageFont.truetype('arial.ttf', 24)
-
-        async with AsyncPilmoji(image) as pilmoji:
-            await pilmoji.text((10, 10), my_string.strip(), (0, 0, 0), font)
-
-        image.show()
-
-
-asyncio.run(main())
-```
-Results are the exact same.
-### Size/position adjustments
-Is an emoji too low, or too small for a given font?  
-You can also render emojis with offsets:
 ```py 
-pilmoji.text((10, 10), my_string.strip(), (0, 0, 0), font,
-             emoji_size_factor=1.15, emoji_position_offset=(0, -2))
-```
-### Using Microsoft emojis
-Pilmoji also supports Microsoft emojis.  
-Simply set the `use_microsoft_emoji` kwarg to True, as such:
-```py 
-with Pilmoji(image, use_microsoft_emoji=True) as pilmoji:
+from pilmoji.source import MicrosoftEmojiSource
+
+with Pilmoji(image, source=MicrosoftEmojiSource) as pilmoji:
     ...
 ```
+
 ![results](https://jay.has-no-bra.in/f/suPfj0.png)
-## Notes
-- [async] If you're running PIL in an executor, use the **sync** version of Pilmoji instead.
-- [async] It is not recommended to run PIL in asynchronous conditions (PIL is blocking.)
-    - If you really have to, run the manipulation in an executor.
+
+It is also possible to create your own emoji sources via subclass.
+
+## Fine adjustments
+If an emoji looks too small or too big, or out of place, you can make fine adjustments 
+with the `emoji_scale_factor` and `emoji_position_offset` kwargs:
+
+```py 
+pilmoji.text((10, 10), my_string.strip(), (0, 0, 0), font,
+             emoji_scale_factor=1.15, emoji_position_offset=(0, -2))
+```
+
+## Contributing
+Contributions are welcome. Make sure to follow [PEP-8](https://www.python.org/dev/peps/pep-0008/)
+styling guidelines.
