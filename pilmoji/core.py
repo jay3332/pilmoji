@@ -55,7 +55,7 @@ class Pilmoji:
         image: Image.Image,
         *,
         source: Union[BaseSource, Type[BaseSource]] = Twemoji,
-        cache: bool = False,
+        cache: bool = True,
         draw: Optional[ImageDraw.ImageDraw] = None,
         render_discord_emoji: bool = True,
         emoji_scale_factor: float = 1.0,
