@@ -1,2 +1,2 @@
 Pillow
-emoji
+emoji~=1.7
