@@ -4,16 +4,17 @@ import re
 
 from enum import Enum
 
-from emoji import EMOJI_UNICODE
+from emoji import unicode_codes
 from PIL import ImageFont
 
-from typing import Final, List, NamedTuple, TYPE_CHECKING
+from typing import Dict, Final, List, NamedTuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .core import FontT
 
 # This is actually way faster than it seems
-_UNICODE_EMOJI_REGEX = '|'.join(map(re.escape, sorted(EMOJI_UNICODE['en'].values(), key=len, reverse=True)))
+language_pack: Dict[str, str] = unicode_codes.get_emoji_unicode_dict('en')
+_UNICODE_EMOJI_REGEX = '|'.join(map(re.escape, sorted(language_pack.values(), key=len, reverse=True)))
 _DISCORD_EMOJI_REGEX = '<a?:[a-zA-Z0-9_]{2,32}:[0-9]{17,22}>'
 
 EMOJI_REGEX: Final[re.Pattern[str]] = re.compile(f'({_UNICODE_EMOJI_REGEX}|{_DISCORD_EMOJI_REGEX})')
