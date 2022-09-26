@@ -5,6 +5,8 @@ import re
 from enum import Enum
 
 from emoji import unicode_codes
+
+import PIL
 from PIL import ImageFont
 
 from typing import Dict, Final, List, NamedTuple, TYPE_CHECKING
@@ -145,7 +147,10 @@ def getsize(
             if node.type is not NodeType.text:
                 width = int(emoji_scale_factor * font.size)
             else:
-                width = font.getlength(content)
+                if PIL.__version__ >= "9.2.0":
+                    width = font.getlength(content)
+                else:
+                    width, _ = font.getsize(content)
 
             this_x += width
 
