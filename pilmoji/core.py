@@ -250,7 +250,7 @@ class Pilmoji:
             The rescaling factor for emojis. This can be used for fine adjustments.
             Defaults to the factor given in the class constructor, or `1`.
         emoji_position_offset: Tuple[int, int]
-            The emoji position offset for emojis. The can be used for fine adjustments.
+            The emoji position offset for emojis. Then can be used for fine adjustments.
             Defaults to the offset given in the class constructor, or `(0, 0)`.
         """
 
@@ -287,7 +287,7 @@ class Pilmoji:
 
             for node in line:
                 content = node.content
-                width, height = font.getlength(content)
+                width = font.getlength(content)
 
                 if node.type is NodeType.text:
                     self.draw.text((x, y), content, *args, **kwargs)
