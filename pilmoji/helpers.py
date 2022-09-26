@@ -145,7 +145,7 @@ def getsize(
             if node.type is not NodeType.text:
                 width = int(emoji_scale_factor * font.size)
             else:
-                width, _ = font.getsize(content)
+                width, _ = font.getlength(content)
 
             this_x += width
 
