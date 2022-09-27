@@ -146,11 +146,10 @@ def getsize(
 
             if node.type is not NodeType.text:
                 width = int(emoji_scale_factor * font.size)
+            elif PIL.__version__ >= "9.2.0":
+                width = font.getlength(content)
             else:
-                if PIL.__version__ >= "9.2.0":
-                    width = font.getlength(content)
-                else:
-                    width, _ = font.getsize(content)
+                width, _ = font.getsize(content)
 
             this_x += width
 
