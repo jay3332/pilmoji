@@ -315,7 +315,7 @@ class Pilmoji:
                 with Image.open(stream).convert('RGBA') as asset:
                     width = int(emoji_scale_factor * font.size)
                     size = width, math.ceil(asset.height / asset.width * width)
-                    asset = asset.resize(size, Image.LANCZOS)
+                    asset = asset.resize(size, Image.Resampling.LANCZOS)
 
                     ox, oy = emoji_position_offset
                     self.image.paste(asset, (x + ox, y + oy), asset)
