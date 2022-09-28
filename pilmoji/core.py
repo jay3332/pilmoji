@@ -291,7 +291,7 @@ class Pilmoji:
                 content = node.content
 
                 if PIL.__version__ >= "9.2.0":
-                    width = font.getlength(content)
+                    width = int(font.getlength(content))
                 else:
                     width, _ = font.getsize(content)
 
