@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 # This is actually way faster than it seems
 language_pack: Dict[str, str] = unicode_codes.get_emoji_unicode_dict('en')
 _UNICODE_EMOJI_REGEX = '|'.join(map(re.escape, sorted(language_pack.values(), key=len, reverse=True)))
-_DISCORD_EMOJI_REGEX = '<a?:[a-zA-Z0-9_]{2,32}:[0-9]{17,22}>'
+_DISCORD_EMOJI_REGEX = '<a?:[a-zA-Z0-9_]{1,32}:[0-9]{17,22}>'
 
 EMOJI_REGEX: Final[re.Pattern[str]] = re.compile(f'({_UNICODE_EMOJI_REGEX}|{_DISCORD_EMOJI_REGEX})')
 
