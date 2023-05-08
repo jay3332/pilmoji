@@ -75,11 +75,11 @@ class Pilmoji:
 
         self.source: BaseSource = source
 
-        self._cache: bool = bool(cache)
+        self._cache: bool = cache
         self._closed: bool = False
         self._new_draw: bool = False
 
-        self._render_discord_emoji: bool = bool(render_discord_emoji)
+        self._render_discord_emoji: bool = render_discord_emoji
         self._default_emoji_scale_factor: float = emoji_scale_factor
         self._default_emoji_position_offset: Tuple[int, int] = emoji_position_offset
 
