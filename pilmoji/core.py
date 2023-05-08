@@ -210,6 +210,7 @@ class Pilmoji:
         font: FontT = None,
         anchor: str = None,
         spacing: int = 4,
+        node_spacing: int = 0,
         align: str = "left",
         direction: str = None,
         features: str = None,
@@ -246,6 +247,8 @@ class Pilmoji:
             The font to render the text with.
         spacing: int
             How many pixels there should be between lines. Defaults to `4`
+        node_spacing: int
+            How many pixels there should be between nodes (text/unicode_emojis/custom_emojis). Defaults to `0`
         emoji_scale_factor: float
             The rescaling factor for emojis. This can be used for fine adjustments.
             Defaults to the factor given in the class constructor, or `1`.
@@ -291,7 +294,7 @@ class Pilmoji:
 
                 if node.type is NodeType.text:
                     self.draw.text((x, y), content, *args, **kwargs)
-                    x += width
+                    x += node_spacing + width
                     continue
 
                 stream = None
@@ -303,7 +306,7 @@ class Pilmoji:
 
                 if not stream:
                     self.draw.text((x, y), content, *args, **kwargs)
-                    x += width
+                    x += node_spacing + width
                     continue
 
                 with Image.open(stream).convert('RGBA') as asset:
@@ -314,7 +317,7 @@ class Pilmoji:
                     ox, oy = emoji_position_offset
                     self.image.paste(asset, (x + ox, y + oy), asset)
 
-                x += width
+                x += node_spacing + width
             y += spacing + font.size
 
     def __enter__(self: P) -> P:
