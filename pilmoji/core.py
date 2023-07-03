@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import math
 
+import PIL
 from PIL import Image, ImageDraw, ImageFont
+
 from typing import Dict, Optional, SupportsInt, TYPE_CHECKING, Tuple, Type, TypeVar, Union
 
 from .helpers import NodeType, getsize, to_nodes
@@ -253,7 +255,7 @@ class Pilmoji:
             The rescaling factor for emojis. This can be used for fine adjustments.
             Defaults to the factor given in the class constructor, or `1`.
         emoji_position_offset: Tuple[int, int]
-            The emoji position offset for emojis. The can be used for fine adjustments.
+            The emoji position offset for emojis. This can be used for fine adjustments.
             Defaults to the offset given in the class constructor, or `(0, 0)`.
         """
 
@@ -290,7 +292,11 @@ class Pilmoji:
 
             for node in line:
                 content = node.content
-                width, height = font.getsize(content)
+
+                if PIL.__version__ >= "9.2.0":
+                    width = int(font.getlength(content))
+                else:
+                    width, _ = font.getsize(content)
 
                 if node.type is NodeType.text:
                     self.draw.text((x, y), content, *args, **kwargs)
@@ -312,7 +318,7 @@ class Pilmoji:
                 with Image.open(stream).convert('RGBA') as asset:
                     width = int(emoji_scale_factor * font.size)
                     size = width, math.ceil(asset.height / asset.width * width)
-                    asset = asset.resize(size, Image.ANTIALIAS)
+                    asset = asset.resize(size, Image.Resampling.LANCZOS)
 
                     ox, oy = emoji_position_offset
                     self.image.paste(asset, (x + ox, y + oy), asset)
