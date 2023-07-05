@@ -293,7 +293,11 @@ class Pilmoji:
             for node in line:
                 content = node.content
 
-                if tuple([int(part) for part in PIL.__version__.split(".")]) >= (9, 2, 0):
+                if tuple(int(part) for part in PIL.__version__.split(".")) >= (
+                    9,
+                    2,
+                    0,
+                ):
                     width = int(font.getlength(content))
                 else:
                     width, _ = font.getsize(content)
