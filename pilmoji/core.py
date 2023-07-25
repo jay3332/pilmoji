@@ -321,7 +321,7 @@ class Pilmoji:
                     asset = asset.resize(size, Image.Resampling.LANCZOS)
 
                     ox, oy = emoji_position_offset
-                    self.image.paste(asset, (x + ox, y + oy), asset)
+                    self.image.paste(asset, int(x + ox, y + oy), asset)
 
                 x += node_spacing + width
             y += spacing + font.size
