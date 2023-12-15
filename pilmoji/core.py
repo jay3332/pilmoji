@@ -267,7 +267,7 @@ class Pilmoji:
 
         if font is None:
             font = ImageFont.load_default()
-        
+
         # first we need to test the anchor
         # because we want to make the exact same positions transformations than the "ImageDraw"."text" function in PIL
         # https://github.com/python-pillow/Pillow/blob/66c244af3233b1cc6cc2c424e9714420aca109ad/src/PIL/ImageDraw.py#L449
@@ -289,12 +289,10 @@ class Pilmoji:
         if direction == "ttb" and "\n" in text:
             msg = "ttb direction is unsupported for multiline text"
             raise ValueError(msg)
-        
+
         def getink(fill):
             ink, fill = self.draw._getink(fill)
-            if ink is None:
-                return fill
-            return ink
+            return fill if ink is None else ink
 
         x, y = xy
         original_x = x
@@ -325,7 +323,7 @@ class Pilmoji:
 
                 elif self._render_discord_emoji and node.type is NodeType.discord_emoji:
                     stream = self._get_discord_emoji(content)
-                
+
                 if stream:
                     streams[node_id][line_id] = stream
 
@@ -380,7 +378,7 @@ class Pilmoji:
             else:
                 msg = 'align must be "left", "center" or "right"'
                 raise ValueError(msg)
-            
+
             # if this line hase text to display then we draw it all at once ( one time only per line )
             if len(nodes_line_to_print[node_id]) > 0:
                 self.draw.text(
@@ -400,7 +398,7 @@ class Pilmoji:
                     *args,
                     **kwargs
                 )
-            
+
             coord = []
             start = []
             for i in range(2):
@@ -434,7 +432,7 @@ class Pilmoji:
                 except AttributeError:
                     pass
                 x, line_y = coord
-            
+
             for line_id, node in enumerate(line):
                 content = node.content
 
@@ -454,7 +452,7 @@ class Pilmoji:
                         size = width, round(math.ceil(asset.height / asset.width * width))
                         asset = asset.resize(size, Image.Resampling.LANCZOS)
                         ox, oy = emoji_position_offset
-                        
+
                         self.image.paste(asset, (round(x + ox), round(line_y + oy)), asset)
 
                 x += node_spacing + width
