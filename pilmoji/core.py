@@ -267,64 +267,198 @@ class Pilmoji:
 
         if font is None:
             font = ImageFont.load_default()
+        
+        # first we need to test the anchor
+        # because we want to make the exact same positions transformations than the "ImageDraw"."text" function in PIL
+        # https://github.com/python-pillow/Pillow/blob/66c244af3233b1cc6cc2c424e9714420aca109ad/src/PIL/ImageDraw.py#L449
 
-        args = (
-            fill,
-            font,
-            anchor,
-            spacing,
-            align,
-            direction,
-            features,
-            language,
-            stroke_width,
-            stroke_fill,
-            embedded_color,
-            *args
-        )
+        # also we are note using the "ImageDraw"."multiline_text" since when we are cuting the text in nodes
+        # a lot of code could be simplify this way
+        # https://github.com/python-pillow/Pillow/blob/66c244af3233b1cc6cc2c424e9714420aca109ad/src/PIL/ImageDraw.py#L567
+
+        if anchor is None:
+            anchor = "la"
+        elif len(anchor) != 2:
+            msg = "anchor must be a 2 character string"
+            raise ValueError(msg)
+        elif anchor[1] in "tb" and "\n" in text:
+            msg = "anchor not supported for multiline text"
+            raise ValueError(msg)
+
+        # need to be checked here because we are not using the real "ImageDraw"."multiline_text"
+        if direction == "ttb" and "\n" in text:
+            msg = "ttb direction is unsupported for multiline text"
+            raise ValueError(msg)
+        
+        def getink(fill):
+            ink, fill = self.draw._getink(fill)
+            if ink is None:
+                return fill
+            return ink
 
         x, y = xy
         original_x = x
         nodes = to_nodes(text)
+        # get the distance between lines ( will be add to y between each line )
+        line_spacing = self.draw._multiline_spacing(font, spacing, stroke_width)
 
-        for line in nodes:
-            x = original_x
+        # I change a part of the logic of text writing because it couldn't work "the same as PIL" if I didn't
+        nodes_line_to_print = []
+        widths = []
+        max_width = 0
+        streams = {}
+        mode = self.draw.fontmode
+        if stroke_width == 0 and embedded_color:
+            mode = "RGBA"
+        ink = getink(fill)
+        # we get the size taken by a " " to be drawn with the given options
+        space_text_lenght = self.draw.textlength(" ", font, direction=direction, features=features, language=language, embedded_color=embedded_color)
 
-            for node in line:
+        for node_id, line in enumerate(nodes):
+            text_line = ""
+            streams[node_id] = {}
+            for line_id, node in enumerate(line):
                 content = node.content
-
-                if tuple(int(part) for part in PIL.__version__.split(".")) >= (9, 2, 0):
-                    width = int(font.getlength(content))
-                else:
-                    width, _ = font.getsize(content)
-
-                if node.type is NodeType.text:
-                    self.draw.text((x, y), content, *args, **kwargs)
-                    x += node_spacing + width
-                    continue
-
                 stream = None
                 if node.type is NodeType.emoji:
                     stream = self._get_emoji(content)
 
                 elif self._render_discord_emoji and node.type is NodeType.discord_emoji:
                     stream = self._get_discord_emoji(content)
+                
+                if stream:
+                    streams[node_id][line_id] = stream
 
-                if not stream:
-                    self.draw.text((x, y), content, *args, **kwargs)
-                    x += node_spacing + width
+                if node.type is NodeType.text or not stream:
+                    # each text in the same line are concatenate
+                    text_line += node.content
                     continue
 
                 with Image.open(stream).convert('RGBA') as asset:
-                    width = int(emoji_scale_factor * font.size)
-                    size = width, math.ceil(asset.height / asset.width * width)
-                    asset = asset.resize(size, Image.Resampling.LANCZOS)
-
+                    width = round(emoji_scale_factor * font.size)
                     ox, oy = emoji_position_offset
-                    self.image.paste(asset, (x + ox, y + oy), asset)
+                    size = round(width + ox + (node_spacing * 2))
+                    # for every emoji we calculate the space needed to display it in the current text
+                    space_to_had = round(size / space_text_lenght)
+                    # we had the equivalent space as " " caracter in the line text
+                    text_line += "".join(" " for x in range(space_to_had))
+
+            #saving each line with the place to display emoji at the right place
+            nodes_line_to_print.append(text_line)
+            line_width = self.draw.textlength(
+                text_line, font, direction=direction, features=features, language=language
+            )
+            widths.append(line_width)
+            max_width = max(max_width, line_width)
+
+        # taking into acount the anchor to place the text in the right place
+        if anchor[1] == "m":
+            y -= (len(nodes) - 1) * line_spacing / 2.0
+        elif anchor[1] == "d":
+            y -= (len(nodes) - 1) * line_spacing
+
+        for node_id, line in enumerate(nodes):
+            # restore the original x wanted for each line
+            x = original_x
+            # some transformations should not be applied to y
+            line_y = y
+            width_difference = max_width - widths[node_id]
+
+            # first align left by anchor
+            if anchor[0] == "m":
+                x -= width_difference / 2.0
+            elif anchor[0] == "r":
+                x -= width_difference
+
+            # then align by align parameter
+            if align == "left":
+                pass
+            elif align == "center":
+                x += width_difference / 2.0
+            elif align == "right":
+                x += width_difference
+            else:
+                msg = 'align must be "left", "center" or "right"'
+                raise ValueError(msg)
+            
+            # if this line hase text to display then we draw it all at once ( one time only per line )
+            if len(nodes_line_to_print[node_id]) > 0:
+                self.draw.text(
+                    (x, line_y),
+                    nodes_line_to_print[node_id],
+                    fill=fill,
+                    font=font,
+                    anchor=anchor,
+                    spacing=spacing,
+                    align=align,
+                    direction=direction,
+                    features=features,
+                    language=language,
+                    stroke_width=stroke_width,
+                    stroke_fill=stroke_fill,
+                    embedded_color=embedded_color,
+                    *args,
+                    **kwargs
+                )
+            
+            coord = []
+            start = []
+            for i in range(2):
+                coord.append(int((x, y)[i]))
+                start.append(math.modf((x, y)[i])[0])
+
+            # respecting the way parameters are used in PIL to find the good x and y
+            if ink is not None:
+                stroke_ink = None
+                if stroke_width:
+                    stroke_ink = getink(stroke_fill) if stroke_fill is not None else ink
+
+                if stroke_ink is not None:
+                    ink = stroke_ink
+                    stroke_width = 0
+                try:
+                    _, offset = font.getmask2(
+                        nodes_line_to_print[node_id],
+                        mode,
+                        direction=direction,
+                        features=features,
+                        language=language,
+                        stroke_width=stroke_width,
+                        anchor=anchor,
+                        ink=ink,
+                        start=start,
+                        *args,
+                        **kwargs,
+                    )
+                    coord = coord[0] + offset[0], coord[1] + offset[1]
+                except AttributeError:
+                    pass
+                x, line_y = coord
+            
+            for line_id, node in enumerate(line):
+                content = node.content
+
+                # if node is text then we decale our x 
+                # but since the text line as already be drawn we do not need to draw text here anymore
+                if node.type is NodeType.text or line_id not in streams[node_id]:
+                    if tuple(int(part) for part in PIL.__version__.split(".")) >= (9, 2, 0):
+                        width = int(font.getlength(content, direction=direction, features=features, language=language))
+                    else:
+                        width, _ = font.getsize(content)
+                    x += node_spacing + width
+                    continue
+
+                if line_id in streams[node_id]:
+                    with Image.open(streams[node_id][line_id]).convert('RGBA') as asset:
+                        width = round(emoji_scale_factor * font.size)
+                        size = width, round(math.ceil(asset.height / asset.width * width))
+                        asset = asset.resize(size, Image.Resampling.LANCZOS)
+                        ox, oy = emoji_position_offset
+                        
+                        self.image.paste(asset, (round(x + ox), round(line_y + oy)), asset)
 
                 x += node_spacing + width
-            y += spacing + font.size
+            y += line_spacing
 
     def __enter__(self: P) -> P:
         return self
