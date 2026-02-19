@@ -51,7 +51,7 @@ with Image.new('RGB', (550, 80), (255, 255, 255)) as image:
 ```
 
 #### Result
-![Example result](https://jay.has-no-bra.in/f/j4iEcc.png)
+![Example result](.github/readme/image.png)
 
 ## Switching emoji sources
 As seen from the example, Pilmoji defaults to the `Twemoji` emoji source. 
@@ -67,7 +67,7 @@ with Pilmoji(image, source=MicrosoftEmojiSource) as pilmoji:
     ...
 ```
 
-![results](https://jay.has-no-bra.in/f/suPfj0.png)
+![results](.github/readme/image2.png)
 
 It is also possible to create your own emoji sources via subclass.
 
