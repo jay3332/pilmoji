@@ -50,6 +50,9 @@ class Pilmoji:
     emoji_position_offset: Tuple[int, int]
         A 2-tuple representing the x and y offset for emojis when rendering,
         respectively. Defaults to `(0, 0)`
+    disk_cache: bool
+        Whether or not to permanently cache cdn-fetched emojis to disk,
+        defaults to `False` but can greatly improve speed in certain cases.
     """
 
     def __init__(
@@ -61,7 +64,8 @@ class Pilmoji:
         draw: Optional[ImageDraw.ImageDraw] = None,
         render_discord_emoji: bool = True,
         emoji_scale_factor: float = 1.0,
-        emoji_position_offset: Tuple[int, int] = (0, 0)
+        emoji_position_offset: Tuple[int, int] = (0, 0),
+        disk_cache: bool = False,
     ) -> None:
         self.image: Image.Image = image
         self.draw: ImageDraw.ImageDraw = draw
@@ -70,7 +74,7 @@ class Pilmoji:
             if not issubclass(source, BaseSource):
                 raise TypeError(f'source must inherit from BaseSource, not {source}.')
 
-            source = source()
+            source = source(disk_cache=disk_cache)
 
         elif not isinstance(source, BaseSource):
             raise TypeError(f'source must inherit from BaseSource, not {source.__class__}.')

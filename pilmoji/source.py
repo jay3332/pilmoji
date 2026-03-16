@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from io import BytesIO
+from pathlib import Path
 
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
@@ -154,18 +155,45 @@ class EmojiCDNSource(DiscordEmojiSourceMixin):
 
     BASE_EMOJI_CDN_URL: ClassVar[str] = 'https://emojicdn.elk.sh/'
     STYLE: ClassVar[str] = None
+    CACHE_DIR: ClassVar[str] = 'emoji_cache'
+
+    def __init__(self, disk_cache=False):
+        super().__init__()
+        self.disk_cache = disk_cache
+        if self.disk_cache:
+            self.cache_dir = Path(self.CACHE_DIR)
+            self.cache_dir.mkdir(exist_ok=True)
 
     def get_emoji(self, emoji: str, /) -> Optional[BytesIO]:
         if self.STYLE is None:
             raise TypeError('STYLE class variable unfilled.')
 
-        url = self.BASE_EMOJI_CDN_URL + quote_plus(emoji) + '?style=' + quote_plus(self.STYLE)
-        _to_catch = HTTPError if not _has_requests else requests.HTTPError
+        if self.disk_cache:
+            cache_file = self.cache_dir / f"{emoji}_{self.STYLE}.png"
 
-        try:
-            return BytesIO(self.request(url))
-        except _to_catch:
-            pass
+            if cache_file.exists():
+                with cache_file.open('rb') as f:
+                    return BytesIO(f.read())
+            else:
+                url = self.BASE_EMOJI_CDN_URL + quote_plus(emoji) + '?style=' + quote_plus(self.STYLE)
+                _to_catch = HTTPError if not _has_requests else requests.HTTPError
+
+                try:
+                    data = self.request(url)
+                    with cache_file.open('wb') as f:
+                        f.write(data)
+                    return BytesIO(data)
+                except _to_catch:
+                    pass
+        else:
+            url = self.BASE_EMOJI_CDN_URL + quote_plus(emoji) + '?style=' + quote_plus(self.STYLE)
+            _to_catch = HTTPError if not _has_requests else requests.HTTPError
+
+            try:
+                data = self.request(url)
+                return BytesIO(data)
+            except _to_catch:
+                pass
 
 
 class TwitterEmojiSource(EmojiCDNSource):
