@@ -430,7 +430,6 @@ class Pilmoji:
 
                 if stroke_ink is not None:
                     ink = stroke_ink
-                    stroke_width = 0
                 try:
                     _, offset = font.getmask2(
                         nodes_line_to_print[node_id],
@@ -438,7 +437,6 @@ class Pilmoji:
                         direction=direction,
                         features=features,
                         language=language,
-                        stroke_width=stroke_width,
                         anchor=anchor,
                         ink=ink,
                         start=start,
